@@ -76,32 +76,48 @@ app.get('/feed', async (req, res) => {
 
 //Find by id and delete
 
-app.delete('/user',async(req,res)=>{
+app.delete('/user', async (req, res) => {
     const userId = req.body.userId;
-     try{
-         const user = await User.findByIdAndDelete(userId)
-         res.send("User Deleted Successfully!")
-     }catch(err){
-          res.status(400).send("Something went wrong!")
-     }
+    try {
+        const user = await User.findByIdAndDelete(userId)
+        res.send("User Deleted Successfully!")
+    } catch (err) {
+        res.status(400).send("Something went wrong!")
+    }
 })
 
 //Update data of the User
 
-app.patch('/user',async(req,res)=>{
+app.patch('/user/:userId', async (req, res) => {
 
-    const userId = req.body.userId;
+    const userId = req.params?.userId;
     const data = req.body;
 
-    try{
-        const user = await User.findByIdAndUpdate({_id:userId},data,{
-            returnDocument:'after',
-            runValidators:true
-        });
-        res.send("User Updated Successfully!")
+    try {
 
-    }catch(err){
-         res.status(400).send("Something went wrong!")
+        const ALLOWED_UPDATES = ["userId", "photoUrl", "about", "gender", "age"];
+
+        const isUpdateAllowed = Object.keys(data).every((k) => {
+            return ALLOWED_UPDATES.includes(k); // Explicitly return the result
+        });
+
+        if (!isUpdateAllowed) {
+            throw new Error("Update not allowed");
+        }
+
+        const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+            returnDocument: 'after',
+            runValidators: true
+        });
+
+        if (!user) {
+            return res.status(404).send("User not found!");
+        }
+
+        res.send("User Updated Successfully!");
+
+    } catch (err) {
+        res.status(400).send(`Something went wrong! ${err.message}`);
     }
 })
 
