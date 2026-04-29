@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
     firstName:{
@@ -13,11 +14,21 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true,
         unique:true,
-        trim:true
+        trim:true,
+        validate(value){
+            if(!validator.isEmail(value)){
+               throw new Error("Invalid Email Address");
+            }
+        } 
     },
     password:{
         type:String,
-        required:true
+        required:true,
+        validate(value){
+          if(!validator.isStrongPassword(value)){
+            throw new Error("Enter Strong Password");
+          }
+        }
     },
     age:{
         type:Number,
@@ -33,7 +44,12 @@ const userSchema = new mongoose.Schema({
     },
     photoUrl:{
         type:String,
-        default:"https://img.freepik.com/premium-photo/software-engineer-digital-avatar-generative-ai_934475-8997.jpg?w=2000"
+        default:"https://img.freepik.com/premium-photo/software-engineer-digital-avatar-generative-ai_934475-8997.jpg?w=2000",
+        validate(value){
+            if(!validator.isURL(value)){
+               throw new Error("Invalid Photo URL");
+            }
+        } 
     },
     about:{
         type:String,
